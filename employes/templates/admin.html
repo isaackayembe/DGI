@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block head_title %}{% trans "Administration des Congés" %}{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 rounded shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="{% static 'b.jpg' %}" alt="Logo" width="40" class="me-2">
+                <span>Direction Générale des Impôts</span>
+            </a>
+            <div class="d-flex">
+                <span class="navbar-text me-3">
+                    Connecté : {{ request.user.get_full_name|default:request.user.username }}
+                </span>
+                <a href="{% url 'account_logout' %}" class="btn btn-outline-danger btn-sm">Déconnexion</a>
+            </div>
+        </div>
+    </nav>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <h2>{% trans "Gestion des demandes de congés" %}</h2>
+            <p class="text-muted">
+                {% trans "Vous pouvez traiter et mettre à jour le statut des demandes soumises par les agents." %}
+            </p>
+        </div>
+    </div>
+
+   
+    <div class="row mb-4">
+    <div class="col-12 col-md-6">
+        <form method="get" class="d-flex">
+            <input type="text" name="q" value="{{ query }}" class="form-control me-2" placeholder="Rechercher un agent...">
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+        </form>
+    </div>
+    {% if agent_conges_count %}
+    <div class="col-12 col-md-6 text-end mt-2 mt-md-0">
+        <p><strong>{{ query }}</strong> a déjà soumis {{ agent_conges_count }} demande(s) de congé.</p>
+    </div>
+    {% endif %}
+</div>
+
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <table class="table table-hover table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>{% trans "Agent" %}</th>
+                         <th>{% trans "Matricule" %}</th>
+                        <th>{% trans "Type de congé" %}</th>
+                        <th>{% trans "Date début" %}</th>
+                        <th>{% trans "Date fin" %}</th>
+                        <th>{% trans "Motif" %}</th>
+                        <th>{% trans "Statut" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for conge in conges %}
+                    <tr>
+                        <td>{{ conge.demandeur.username }}</td>
+                         <td>{{ conge.matricule }}</td>   {# 👈 affichage matricule #}
+                        <td>{{ conge.get_type_conge_display }}</td>
+                        <td>{{ conge.date_debut }}</td>
+                        <td>{{ conge.date_fin }}</td>
+                        <td>{{ conge.motif }}</td>
+                        <td>
+                            {% if conge.statut == "APPROUVE" %}
+                                <span class="badge bg-success">{% trans "Approuvé" %}</span>
+                            {% elif conge.statut == "EN_ATTENTE" %}
+                                <span class="badge bg-warning">{% trans "En attente" %}</span>
+                            {% elif conge.statut == "REJETE" %}
+                                <span class="badge bg-danger">{% trans "Rejeté" %}</span>
+                            {% else %}
+                                <span class="badge bg-info">{% trans "Plus d'infos" %}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="conge_id" value="{{ conge.id }}">
+                                <select name="statut" class="form-select form-select-sm">
+                                    <option value="EN_ATTENTE" {% if conge.statut == "EN_ATTENTE" %}selected{% endif %}>{% trans "En attente" %}</option>
+                                    <option value="APPROUVE" {% if conge.statut == "APPROUVE" %}selected{% endif %}>{% trans "Approuvé" %}</option>
+                                    <option value="REJETE" {% if conge.statut == "REJETE" %}selected{% endif %}>{% trans "Rejeté" %}</option>
+                                    <option value="PLUS_D_INFOS" {% if conge.statut == "PLUS_D_INFOS" %}selected{% endif %}>{% trans "Plus d'infos" %}</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">{% trans "Mettre à jour" %}</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">{% trans "Aucune demande pour le moment." %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bas de page -->
+<footer class="text-center mt-5 mb-3 text-muted">
+    &copy; {{ now.year }} DGI - Administration des congés
+</footer>
+{% endblock %}

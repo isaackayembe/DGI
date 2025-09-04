@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block head_title %}{% trans "Nouvelle Demande de Congé" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <div class="card shadow-sm">
+                <div class="card-header text-center bg-primary text-white">
+                    <h2>{% trans "Demande de Congé" %}</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-center text-muted mb-4">
+                        {% trans "Veuillez remplir le formulaire ci-dessous pour soumettre votre demande de congé." %}
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-success w-100">
+                            {% trans "Soumettre la demande" %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bouton retour à la liste des congés -->
+            <div class="text-center mt-3">
+                <a href="{% url 'mes_conges' %}" class="btn btn-secondary">
+                    {% trans "Retour à Mes Congés" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bas de page -->
+<footer class="text-center mt-5 mb-3 text-muted">
+    &copy; {{ now.year }} DGI - Plateforme de gestion des congés
+</footer>
+{% endblock %}

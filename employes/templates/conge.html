@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block head_title %}{% trans "Mes Congés" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 rounded shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="{% static 'b.jpg' %}" alt="Logo" width="40" class="me-2">
+                <span>Direction Générale des Impôts</span>
+            </a>
+            <div class="d-flex">
+                <span class="navbar-text me-3">
+                    Connecté : {{ request.user.get_full_name|default:request.user.username }}
+                </span>
+                <a href="{% url 'account_logout' %}" class="btn btn-outline-danger btn-sm">Déconnexion</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Message de bienvenue -->
+    <div class="mb-4 p-3 bg-light rounded shadow-sm">
+        <h3>Bienvenue, {{ request.user.first_name|default:request.user.username }} !</h3>
+        <p>Vous êtes sur la plateforme de demande de congés. Vous pouvez créer une nouvelle demande et suivre le statut de vos demandes précédentes.</p>
+    </div>
+
+    <!-- Bouton nouvelle demande -->
+    <div class="mb-3">
+        <a href="{% url 'demander_conge' %}" class="btn btn-success">Nouvelle Demande de Congé</a>
+    </div>
+
+    <!-- Texte descriptif avant tableau -->
+    <p class="text-muted mb-2">Ci-dessous, vous trouverez toutes vos demandes précédentes ainsi que leur statut actuel :</p>
+
+    <!-- Tableau des congés -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th>Type</th>
+                    <th>Début</th>
+                    <th>Fin</th>
+                    <th>Motif</th>
+                    <th>Statut</th>
+                    <th>Date de demande</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conge in conges %}
+                <tr>
+                    <td>{{ conge.get_type_conge_display }}</td>
+                    <td>{{ conge.date_debut }}</td>
+                    <td>{{ conge.date_fin }}</td>
+                    <td>{{ conge.motif }}</td>
+                    <td>
+                        {% if conge.statut == 'APPROUVE' %}
+                            <span class="badge bg-success">{{ conge.get_statut_display }}</span>
+                        {% elif conge.statut == 'EN_ATTENTE' %}
+                            <span class="badge bg-warning text-dark">{{ conge.get_statut_display }}</span>
+                        {% elif conge.statut == 'REJETE' %}
+                            <span class="badge bg-danger">{{ conge.get_statut_display }}</span>
+                        {% elif conge.statut == 'PLUS_EXPLICATION' %}
+                            <span class="badge bg-secondary">{{ conge.get_statut_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ conge.date_demande|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Aucune demande pour le moment</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="bg-light text-center text-muted py-3 mt-5 border-top">
+    &copy; {{ now.year }} DIRECTION GENERAL DES IMPOTS. Tous droits réservés.
+</footer>
+{% endblock %}
